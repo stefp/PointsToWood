@@ -1,6 +1,7 @@
 import datetime
 start = datetime.datetime.now()
-import resource
+# import resource # not available in windows
+import psutil # is available for both systems
 import os
 import os.path as OP
 import argparse
@@ -13,6 +14,12 @@ import sys
 import numpy as np
 import re
 from src.io import load_file, save_file
+
+
+def get_peak_memory_mb():
+    process = psutil.Process()
+    mem_info = process.memory_info()
+    return mem_info.rss / 1e6  # resident set size in MB
 
 def set_num_threads(num_threads):
     torch.set_num_threads(num_threads)
@@ -137,7 +144,7 @@ if __name__ == '__main__':
         preprocess(args)
         
         if args.verbose:
-            print(f'peak memory: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6}')
+            print(f'peak memory: {get_peak_memory_mb():.2f} MB')
             print(f'runtime: {(datetime.datetime.now() - start).seconds}')
         
         '''
@@ -150,7 +157,7 @@ if __name__ == '__main__':
 
         if os.path.exists(args.vxfile):
             shutil.rmtree(args.vxfile)
-
+            
         if args.verbose:
-            print(f'peak memory: {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6}')
+            print(f'peak memory: {get_peak_memory_mb():.2f} MB')
             print(f'runtime: {(datetime.datetime.now() - start).seconds}')
